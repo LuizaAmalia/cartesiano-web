@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coordenadas Cartesianas com Teclado</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            min-height: 100vh;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 950px;
+            width: 100%;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #2c3e50, #4ca1af);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .main-content {
+                flex-direction: row;
+            }
+        }
+        
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .instructions {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .instructions h2 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+        
+        .instructions li {
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        #coordCanvas {
+            background-color: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .exercise {
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .exercise h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 15px 0;
+            align-items: center;
+        }
+        
+        .coordinate-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        input {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            width: 100px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            background-color: #fff;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+        }
+        
+        .virtual-keyboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+        
+        .key {
+            padding: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .key:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+        
+        .key:active {
+            transform: translateY(1px);
+        }
+        
+        .key.number {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        
+        .key.negative {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .key.next {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        
+        .key.check {
+            background: linear-gradient(135deg, #f39c12, #d35400);
+            grid-column: span 3;
+        }
+        
+        .key.new-point {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            grid-column: span 3;
+        }
+        
+        .key.clear {
+            background: linear-gradient(135deg, #7f8c8d, #636e72);
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: none;
+            width: 100%;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            animation: fadeIn 0.5s;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            animation: fadeIn 0.5s;
+        }
+        
+        .score {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @media (max-width: 767px) {
+            .virtual-keyboard {
+                max-width: 240px;
+            }
+            
+            .key {
+                padding: 10px;
+                font-size: 1rem;
+            }
+            
+            input {
+                width: 80px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Coordenadas Cartesianas</h1>
+            <p class="subtitle">Identifique as coordenadas do ponto no gráfico</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="instructions">
+                    <h2>Como jogar:</h2>
+                    <ul>
+                        <li>Observe o ponto vermelho no plano cartesiano</li>
+                        <li>Use o teclado para digitar as coordenadas X e Y</li>
+                        <li>Use "Próximo" para alternar entre os campos</li>
+                        <li>Clique em "Verificar Resposta" para validar</li>
+                        <li>Use "Novo Ponto" para um novo desafio</li>
+                    </ul>
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="coordCanvas" width="400" height="400"></canvas>
+                </div>
+                
+                <div class="score">
+                    <p>Acertos: <span id="correctCount">0</span> | Erros: <span id="incorrectCount">0</span></p>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <div class="exercise">
+                    <h2>Qual é a coordenada do ponto marcado?</h2>
+                    
+                    <div class="input-area">
+                        <div class="coordinate-input">
+                            <span>Ponto P = (</span>
+                            <input type="text" id="xInput" placeholder="x" readonly>
+                            <span>,</span>
+                            <input type="text" id="yInput" placeholder="y" readonly>
+                            <span>)</span>
+                        </div>
+                        
+                        <div class="virtual-keyboard">
+                            <!-- Primeira linha: 1, 2, 3 -->
+                            <button class="key number" data-value="1">1</button>
+                            <button class="key number" data-value="2">2</button>
+                            <button class="key number" data-value="3">3</button>
+                            
+                            <!-- Segunda linha: 4, 5, 6 -->
+                            <button class="key number" data-value="4">4</button>
+                            <button class="key number" data-value="5">5</button>
+                            <button class="key number" data-value="6">6</button>
+                            
+                            <!-- Terceira linha: 7, 8, 9 -->
+                            <button class="key number" data-value="7">7</button>
+                            <button class="key number" data-value="8">8</button>
+                            <button class="key number" data-value="9">9</button>
+                            
+                            <!-- Quarta linha: negativo, 0, apagar -->
+                            <button class="key negative" data-value="-">-</button>
+                            <button class="key number" data-value="0">0</button>
+                            <button class="key clear" data-action="clear">C</button>
+                            
+                            <!-- Quinta linha: próximo campo -->
+                            <button class="key next" data-action="next">Próximo</button>
+                            
+                            <!-- Sexta linha: Verificar Resposta (ocupando 3 colunas) -->
+                            <button class="key check" data-action="check">Verificar Resposta</button>
+                            
+                            <!-- Sétima linha: Novo Ponto (ocupando 3 colunas) -->
+                            <button class="key new-point" data-action="new-point">Novo Ponto</button>
+                        </div>
+                    </div>
+                    
+                    <div id="result" class="result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('coordCanvas');
+            const ctx = canvas.getContext('2d');
+            const xInput = document.getElementById('xInput');
+            const yInput = document.getElementById('yInput');
+            const resultDiv = document.getElementById('result');
+            const correctCountElem = document.getElementById('correctCount');
+            const incorrectCountElem = document.getElementById('incorrectCount');
+            const keys = document.querySelectorAll('.key');
+            
+            // Configurações
+            const padding = 40;
+            const axisColor = '#2c3e50';
+            const gridColor = '#e0e0e0';
+            const pointColor = '#e74c3c';
+            
+            let currentPoint = {};
+            let correctCount = 0;
+            let incorrectCount = 0;
+            let currentField = xInput;
+            
+            // Inicializar foco no campo X
+            xInput.focus();
+            
+            // Adicionar event listeners para as teclas do teclado virtual
+            keys.forEach(key => {
+                key.addEventListener('click', () => {
+                    const value = key.getAttribute('data-value');
+                    const action = key.getAttribute('data-action');
+                    
+                    if (action === 'clear') {
+                        currentField.value = '';
+                    } else if (action === 'next') {
+                        currentField = currentField === xInput ? yInput : xInput;
+                        currentField.focus();
+                    } else if (action === 'check') {
+                        checkAnswer();
+                    } else if (action === 'new-point') {
+                        newPoint();
+                    } else if (value === '-') {
+                        if (currentField.value === '' || currentField.value === '0') {
+                            currentField.value = '-';
+                        } else if (currentField.value.startsWith('-')) {
+                            currentField.value = currentField.value.substring(1);
+                        } else {
+                            currentField.value = '-' + currentField.value;
+                        }
+                    } else {
+                        if (currentField.value === '0' && value !== '-') {
+                            currentField.value = value;
+                        } else {
+                            currentField.value += value;
+                        }
+                    }
+                });
+            });
+            
+            // Desenhar o plano cartesiano
+            function drawCoordinateSystem() {
+                const width = canvas.width;
+                const height = canvas.height;
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const scale = 20;
+                
+                // Limpar canvas
+                ctx.clearRect(0, 0, width, height);
+                
+                // Desenhar grade
+                ctx.strokeStyle = gridColor;
+                ctx.lineWidth = 1;
+                
+                // Linhas verticais
+                for (let x = centerX; x < width; x += scale) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, padding);
+                    ctx.lineTo(x, height - padding);
+                    ctx.stroke();
+                }
+                for (let x = centerX; x > 0; x -= scale) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, padding);
+                    ctx.lineTo(x, height - padding);
+                    ctx.stroke();
+                }
+                
+                // Linhas horizontais
+                for (let y = centerY; y < height; y += scale) {
+                    ctx.beginPath();
+                    ctx.moveTo(padding, y);
+                    ctx.lineTo(width - padding, y);
+                    ctx.stroke();
+                }
+                for (let y = centerY; y > 0; y -= scale) {
+                    ctx.beginPath();
+                    ctx.moveTo(padding, y);
+                    ctx.lineTo(width - padding, y);
+                    ctx.stroke();
+                }
+                
+                // Desenhar eixos
+                ctx.strokeStyle = axisColor;
+                ctx.lineWidth = 2;
+                
+                // Eixo X
+                ctx.beginPath();
+                ctx.moveTo(padding, centerY);
+                ctx.lineTo(width - padding, centerY);
+                ctx.stroke();
+                
+                // Eixo Y
+                ctx.beginPath();
+                ctx.moveTo(centerX, padding);
+                ctx.lineTo(centerX, height - padding);
+                ctx.stroke();
+                
+                // Flechas nos eixos
+                ctx.beginPath();
+                ctx.moveTo(width - padding, centerY);
+                ctx.lineTo(width - padding - 8, centerY - 4);
+                ctx.lineTo(width - padding - 8, centerY + 4);
+                ctx.closePath();
+                ctx.fillStyle = axisColor;
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, padding);
+                ctx.lineTo(centerX - 4, padding + 8);
+                ctx.lineTo(centerX + 4, padding + 8);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Graduações e rótulos
+                ctx.fillStyle = axisColor;
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Graduações eixo X positiva
+                for (let i = 1; i <= 8; i++) {
+                    const x = centerX + i * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(x, centerY - 4);
+                    ctx.lineTo(x, centerY + 4);
+                    ctx.stroke();
+                    ctx.fillText(i, x, centerY + 15);
+                }
+                
+                // Graduações eixo X negativa
+                for (let i = 1; i <= 8; i++) {
+                    const x = centerX - i * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(x, centerY - 4);
+                    ctx.lineTo(x, centerY + 4);
+                    ctx.stroke();
+                    ctx.fillText(-i, x, centerY + 15);
+                }
+                
+                // Graduações eixo Y positiva
+                for (let i = 1; i <= 8; i++) {
+                    const y = centerY - i * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX - 4, y);
+                    ctx.lineTo(centerX + 4, y);
+                    ctx.stroke();
+                    ctx.fillText(i, centerX - 15, y);
+                }
+                
+                // Graduações eixo Y negativa
+                for (let i = 1; i <= 8; i++) {
+                    const y = centerY + i * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX - 4, y);
+                    ctx.lineTo(centerX + 4, y);
+                    ctx.stroke();
+                    ctx.fillText(-i, centerX - 15, y);
+                }
+                
+                // Rótulos dos eixos
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText('x', width - padding - 12, centerY - 12);
+                ctx.fillText('y', centerX + 12, padding + 12);
+                ctx.fillText('O', centerX - 10, centerY + 12);
+                
+                return { centerX, centerY, scale };
+            }
+            
+            // Gerar um ponto aleatório (incluindo eixos)
+            function generatePoint() {
+                // 20% de chance de gerar um ponto sobre os eixos
+                const onAxis = Math.random() < 0.2;
+                
+                let x, y;
+                
+                if (onAxis) {
+                    // Ponto sobre os eixos
+                    const axisType = Math.floor(Math.random() * 3);
+                    
+                    switch(axisType) {
+                        case 0: // Sobre o eixo X (y = 0)
+                            x = Math.floor(Math.random() * 15) - 7;
+                            y = 0;
+                            break;
+                        case 1: // Sobre o eixo Y (x = 0)
+                            x = 0;
+                            y = Math.floor(Math.random() * 15) - 7;
+                            break;
+                        case 2: // Origem (0,0)
+                            x = 0;
+                            y = 0;
+                            break;
+                    }
+                } else {
+                    // Ponto em um dos quadrantes
+                    const quadrant = Math.floor(Math.random() * 4) + 1;
+                    
+                    switch(quadrant) {
+                        case 1: // Primeiro quadrante (x positivo, y positivo)
+                            x = Math.floor(Math.random() * 7) + 1;
+                            y = Math.floor(Math.random() * 7) + 1;
+                            break;
+                        case 2: // Segundo quadrante (x negativo, y positivo)
+                            x = Math.floor(Math.random() * 7) - 7;
+                            y = Math.floor(Math.random() * 7) + 1;
+                            break;
+                        case 3: // Terceiro quadrante (x negativo, y negativo)
+                            x = Math.floor(Math.random() * 7) - 7;
+                            y = Math.floor(Math.random() * 7) - 7;
+                            break;
+                        case 4: // Quarto quadrante (x positivo, y negativo)
+                            x = Math.floor(Math.random() * 7) + 1;
+                            y = Math.floor(Math.random() * 7) - 7;
+                            break;
+                    }
+                }
+                
+                currentPoint = { x, y };
+                return currentPoint;
+            }
+            
+            // Desenhar ponto no plano
+            function drawPoint(centerX, centerY, scale) {
+                const canvasX = centerX + currentPoint.x * scale;
+                const canvasY = centerY - currentPoint.y * scale;
+                
+                // Desenhar ponto
+                ctx.beginPath();
+                ctx.arc(canvasX, canvasY, 6, 0, Math.PI * 2);
+                ctx.fillStyle = pointColor;
+                ctx.fill();
+                
+                // Desenhar contorno do ponto
+                ctx.beginPath();
+                ctx.arc(canvasX, canvasY, 6, 0, Math.PI * 2);
+                ctx.strokeStyle = '#c0392b';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            
+            // Verificar resposta do usuário
+            function checkAnswer() {
+                const userX = parseInt(xInput.value) || 0;
+                const userY = parseInt(yInput.value) || 0;
+                
+                if (xInput.value === '' || yInput.value === '') {
+                    resultDiv.textContent = "Por favor, digite ambos os valores de coordenadas.";
+                    resultDiv.className = "result error";
+                    resultDiv.style.display = "block";
+                    return;
+                }
+                
+                if (userX === currentPoint.x && userY === currentPoint.y) {
+                    resultDiv.textContent = "Parabéns! Você acertou as coordenadas!";
+                    resultDiv.className = "result success";
+                    correctCount++;
+                    correctCountElem.textContent = correctCount;
+                } else {
+                    let hint = "";
+                    if (currentPoint.x === 0 && currentPoint.y === 0) {
+                        hint = "O ponto está na origem (0,0).";
+                    } else if (currentPoint.x === 0) {
+                        hint = "O ponto está sobre o eixo Y.";
+                    } else if (currentPoint.y === 0) {
+                        hint = "O ponto está sobre o eixo X.";
+                    } else {
+                        hint = `O ponto está no quadrante ${getQuadrantName(currentPoint.x, currentPoint.y)}.`;
+                    }
+                    
+                    resultDiv.textContent = `Resposta incorreta. ${hint} Tente novamente!`;
+                    resultDiv.className = "result error";
+                    incorrectCount++;
+                    incorrectCountElem.textContent = incorrectCount;
+                }
+                
+                resultDiv.style.display = "block";
+            }
+            
+            // Obter nome do quadrante
+            function getQuadrantName(x, y) {
+                if (x > 0 && y > 0) return 'I (primeiro)';
+                if (x < 0 && y > 0) return 'II (segundo)';
+                if (x < 0 && y < 0) return 'III (terceiro)';
+                if (x > 0 && y < 0) return 'IV (quarto)';
+                return 'sobre um eixo';
+            }
+            
+            // Limpar campos e gerar novo ponto
+            function newPoint() {
+                xInput.value = "";
+                yInput.value = "";
+                resultDiv.style.display = "none";
+                currentField = xInput;
+                generatePoint();
+                render();
+            }
+            
+            // Atualizar contadores
+            function updateCounters() {
+                correctCountElem.textContent = correctCount;
+                incorrectCountElem.textContent = incorrectCount;
+            }
+            
+            // Renderizar tudo
+            function render() {
+                const coords = drawCoordinateSystem();
+                drawPoint(coords.centerX, coords.centerY, coords.scale);
+                updateCounters();
+            }
+            
+            // Inicializar
+            generatePoint();
+            render();
+            
+            // Focar no campo X ao clicar
+            xInput.addEventListener('click', () => {
+                currentField = xInput;
+            });
+            
+            yInput.addEventListener('click', () => {
+                currentField = yInput;
+            });
+        });
+    </script>
+</body>
+</html>
